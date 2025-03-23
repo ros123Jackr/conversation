@@ -3,9 +3,9 @@ import { defineConfig } from "cypress";
 export default defineConfig({
   e2e: {
     setupNodeEvents: (on, config) => {
-      const isDev = config.watchForFileChanges;
-      const port = process.env.PORT ?? (isDev ? "3000" : "8811");
-      const configOverrides: Partial<Cypress.PluginConfigOptions> = {
+      let isDev = config.watchForFileChanges;
+      let port = process.env.PORT ?? (isDev ? "3000" : "8811");
+      let configOverrides: Partial<Cypress.PluginConfigOptions> = {
         baseUrl: `http://localhost:${port}`,
         screenshotOnRunFailure: !process.env.CI,
       };
