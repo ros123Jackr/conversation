@@ -1,15 +1,15 @@
-let { execSync } = require("node:child_process");
-let crypto = require("node:crypto");
-let fs = require("node:fs/promises");
-let path = require("node:path");
+const { execSync } = require("node:child_process");
+const crypto = require("node:crypto");
+const fs = require("node:fs/promises");
+const path = require("node:path");
 
-let toml = require("@iarna/toml");
-let PackageJson = require("@npmcli/package-json");
-let semver = require("semver");
+const toml = require("@iarna/toml");
+const PackageJson = require("@npmcli/package-json");
+const semver = require("semver");
 
-let cleanupCypressFiles = ({ fileEntries, packageManager }) =>
+const cleanupCypressFiles = ({ fileEntries, packageManager }) =>
   fileEntries.flatMap(([filePath, content]) => {
-    let newContent = content.replace(
+    const newContent = content.replace(
       new RegExp("npx tsx", "g"),
       packageManager.name === "bun" ? "bun" : `${packageManager.exec} tsx`,
     );
@@ -17,11 +17,11 @@ let cleanupCypressFiles = ({ fileEntries, packageManager }) =>
     return [fs.writeFile(filePath, newContent)];
   });
 
-let escapeRegExp = (string) =>
+const escapeRegExp = (string) =>
   // $& means the whole matched string
   string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-let getPackageManagerCommand = (packageManager) =>
+const getPackageManagerCommand = (packageManager) =>
   // Inspired by https://github.com/nrwl/nx/blob/bd9b33eaef0393d01f747ea9a2ac5d2ca1fb87c6/packages/nx/src/utils/package-manager.ts#L38-L103
   ({
     bun: () => ({
@@ -37,9 +37,9 @@ let getPackageManagerCommand = (packageManager) =>
       run: (script, args) => `npm run ${script} ${args ? `-- ${args}` : ""}`,
     }),
     pnpm: () => {
-      let pnpmVersion = getPackageManagerVersion("pnpm");
-      let includeDoubleDashBeforeArgs = semver.lt(pnpmVersion, "7.0.0");
-      let useExec = semver.gte(pnpmVersion, "6.13.0");
+      const pnpmVersion = getPackageManagerVersion("pnpm");
+      const includeDoubleDashBeforeArgs = semver.lt(pnpmVersion, "7.0.0");
+      const useExec = semver.gte(pnpmVersion, "6.13.0");
 
       return {
         exec: useExec ? "pnpm exec" : "pnpx",
@@ -59,21 +59,21 @@ let getPackageManagerCommand = (packageManager) =>
     }),
   })[packageManager]();
 
-let getPackageManagerVersion = (packageManager) =>
+const getPackageManagerVersion = (packageManager) =>
   // Copied over from https://github.com/nrwl/nx/blob/bd9b33eaef0393d01f747ea9a2ac5d2ca1fb87c6/packages/nx/src/utils/package-manager.ts#L105-L114
   execSync(`${packageManager} --version`).toString("utf-8").trim();
 
-let getRandomString = (length) => crypto.randomBytes(length).toString("hex");
+const getRandomString = (length) => crypto.randomBytes(length).toString("hex");
 
-let removeUnusedDependencies = (dependencies, unusedDependencies) =>
+const removeUnusedDependencies = (dependencies, unusedDependencies) =>
   Object.fromEntries(
     Object.entries(dependencies).filter(
       ([key]) => !unusedDependencies.includes(key),
     ),
   );
 
-let updatePackageJson = ({ APP_NAME, packageJson, packageManager }) => {
-  let {
+const updatePackageJson = ({ APP_NAME, packageJson, packageManager }) => {
+  const {
     devDependencies,
     prisma: { seed: prismaSeed, ...prisma },
     scripts: {
@@ -100,35 +100,35 @@ let updatePackageJson = ({ APP_NAME, packageJson, packageManager }) => {
   });
 };
 
-let main = async ({ packageManager, rootDirectory }) => {
-  let pm = getPackageManagerCommand(packageManager);
+const main = async ({ packageManager, rootDirectory }) => {
+  const pm = getPackageManagerCommand(packageManager);
 
-  let README_PATH = path.join(rootDirectory, "README.md");
-  let FLY_TOML_PATH = path.join(rootDirectory, "fly.toml");
-  let EXAMPLE_ENV_PATH = path.join(rootDirectory, ".env.example");
-  let ENV_PATH = path.join(rootDirectory, ".env");
-  let DOCKERFILE_PATH = path.join(rootDirectory, "Dockerfile");
-  let CYPRESS_SUPPORT_PATH = path.join(rootDirectory, "cypress", "support");
-  let CYPRESS_COMMANDS_PATH = path.join(CYPRESS_SUPPORT_PATH, "commands.ts");
-  let CREATE_USER_COMMAND_PATH = path.join(
+  const README_PATH = path.join(rootDirectory, "README.md");
+  const FLY_TOML_PATH = path.join(rootDirectory, "fly.toml");
+  const EXAMPLE_ENV_PATH = path.join(rootDirectory, ".env.example");
+  const ENV_PATH = path.join(rootDirectory, ".env");
+  const DOCKERFILE_PATH = path.join(rootDirectory, "Dockerfile");
+  const CYPRESS_SUPPORT_PATH = path.join(rootDirectory, "cypress", "support");
+  const CYPRESS_COMMANDS_PATH = path.join(CYPRESS_SUPPORT_PATH, "commands.ts");
+  const CREATE_USER_COMMAND_PATH = path.join(
     CYPRESS_SUPPORT_PATH,
     "create-user.ts",
   );
-  let DELETE_USER_COMMAND_PATH = path.join(
+  const DELETE_USER_COMMAND_PATH = path.join(
     CYPRESS_SUPPORT_PATH,
     "delete-user.ts",
   );
 
-  let REPLACER = "blues-stack-template";
+  const REPLACER = "blues-stack-template";
 
-  let DIR_NAME = path.basename(rootDirectory);
-  let SUFFIX = getRandomString(2);
+  const DIR_NAME = path.basename(rootDirectory);
+  const SUFFIX = getRandomString(2);
 
-  let APP_NAME = (DIR_NAME + "-" + SUFFIX)
+  const APP_NAME = (DIR_NAME + "-" + SUFFIX)
     // get rid of anything that's not allowed in an app name
     .replace(/[^a-zA-Z0-9-_]/g, "-");
 
-  let [
+  const [
     prodContent,
     readme,
     env,
@@ -148,15 +148,15 @@ let main = async ({ packageManager, rootDirectory }) => {
     PackageJson.load(rootDirectory),
   ]);
 
-  let newEnv = env.replace(
+  const newEnv = env.replace(
     /^SESSION_SECRET=.*$/m,
     `SESSION_SECRET="${getRandomString(16)}"`,
   );
 
-  let prodToml = toml.parse(prodContent);
+  const prodToml = toml.parse(prodContent);
   prodToml.app = prodToml.app.replace(REPLACER, APP_NAME);
 
-  let initInstructions = `
+  const initInstructions = `
 - First run this stack's \`remix.init\` script and commit the changes it makes to your project.
 
   \`\`\`sh
@@ -167,11 +167,11 @@ let main = async ({ packageManager, rootDirectory }) => {
   \`\`\`
 `;
 
-  let newReadme = readme
+  const newReadme = readme
     .replace(new RegExp(escapeRegExp(REPLACER), "g"), APP_NAME)
     .replace(initInstructions, "");
 
-  let newDockerfile = pm.lockfile
+  const newDockerfile = pm.lockfile
     ? dockerfile.replace(
         new RegExp(escapeRegExp("ADD package.json"), "g"),
         `ADD package.json ${pm.lockfile}`,
