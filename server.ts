@@ -17,11 +17,11 @@ installGlobals();
 run();
 
 async function run() {
-  const BUILD_PATH = path.resolve("build/index.js");
-  const VERSION_PATH = path.resolve("build/version.txt");
+  var BUILD_PATH = path.resolve("build/index.js");
+  var VERSION_PATH = path.resolve("build/version.txt");
 
-  const initialBuild = await reimportServer();
-  const remixHandler =
+  var initialBuild = await reimportServer();
+  var remixHandler =
     process.env.NODE_ENV === "development"
       ? await createDevRequestHandler(initialBuild)
       : createRequestHandler({
@@ -29,8 +29,8 @@ async function run() {
           mode: initialBuild.mode,
         });
 
-  const app = express();
-  const metricsApp = express();
+  var app = express();
+  var metricsApp = express();
   app.use(
     prom({
       metricsPath: "/metrics",
@@ -46,8 +46,8 @@ async function run() {
 
     // /clean-urls/ -> /clean-urls
     if (req.path.endsWith("/") && req.path.length > 1) {
-      const query = req.url.slice(req.path.length);
-      const safepath = req.path.slice(0, -1).replace(/\/+/g, "/");
+      var query = req.url.slice(req.path.length);
+      var safepath = req.path.slice(0, -1).replace(/\/+/g, "/");
       res.redirect(301, safepath + query);
       return;
     }
@@ -59,18 +59,18 @@ async function run() {
   // Postgres DBs.
   // learn more: https://fly.io/docs/getting-started/multi-region-databases/#replay-the-request
   app.all("*", function getReplayResponse(req, res, next) {
-    const { method, path: pathname } = req;
-    const { PRIMARY_REGION, FLY_REGION } = process.env;
+    var { method, path: pathname } = req;
+    var { PRIMARY_REGION, FLY_REGION } = process.env;
 
-    const isMethodReplayable = !["GET", "OPTIONS", "HEAD"].includes(method);
-    const isReadOnlyRegion =
+    var isMethodReplayable = !["GET", "OPTIONS", "HEAD"].includes(method);
+    var isReadOnlyRegion =
       FLY_REGION && PRIMARY_REGION && FLY_REGION !== PRIMARY_REGION;
 
-    const shouldReplay = isMethodReplayable && isReadOnlyRegion;
+    var shouldReplay = isMethodReplayable && isReadOnlyRegion;
 
     if (!shouldReplay) return next();
 
-    const logInfo = {
+    var logInfo = {
       pathname,
       method,
       PRIMARY_REGION,
@@ -100,7 +100,7 @@ async function run() {
 
   app.all("*", remixHandler);
 
-  const port = process.env.PORT || 3000;
+  var port = process.env.PORT || 3000;
   app.listen(port, () => {
     console.log(`✅ app ready: http://localhost:${port}`);
 
@@ -109,7 +109,7 @@ async function run() {
     }
   });
 
-  const metricsPort = process.env.METRICS_PORT || 3010;
+  var metricsPort = process.env.METRICS_PORT || 3010;
 
   metricsApp.listen(metricsPort, () => {
     console.log(`✅ metrics ready: http://localhost:${metricsPort}/metrics`);
@@ -123,10 +123,10 @@ async function run() {
       }
     });
 
-    const stat = fs.statSync(BUILD_PATH);
+    var stat = fs.statSync(BUILD_PATH);
 
     // convert build path to URL for Windows compatibility with dynamic `import`
-    const BUILD_URL = url.pathToFileURL(BUILD_PATH).href;
+    var BUILD_URL = url.pathToFileURL(BUILD_PATH).href;
 
     // use a timestamp query parameter to bust the import cache
     return import(BUILD_URL + "?t=" + stat.mtimeMs);
@@ -142,7 +142,7 @@ async function run() {
       // 2. tell Remix that this app server is now up-to-date and ready
       broadcastDevReady(build);
     }
-    const chokidar = await import("chokidar");
+    var chokidar = await import("chokidar");
     chokidar
       .watch(VERSION_PATH, { ignoreInitial: true })
       .on("add", handleServerUpdate)
