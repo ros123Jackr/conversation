@@ -51,7 +51,7 @@ function login({
   cy.then(() => ({ email })).as("user");
   cy.exec(`npx tsx ./cypress/support/create-user.ts "${email}"`).then(
     ({ stdout }) => {
-      let cookieValue = stdout
+      const cookieValue = stdout
         .replace(/.*<cookie>(?<cookieValue>.*)<\/cookie>.*/s, "$<cookieValue>")
         .trim();
       cy.setCookie("__session", cookieValue);
@@ -65,7 +65,7 @@ function cleanupUser({ email }: { email?: string } = {}) {
     deleteUserByEmail(email);
   } else {
     cy.get("@user").then((user) => {
-      let email = (user as { email?: string }).email;
+      const email = (user as { email?: string }).email;
       if (email) {
         deleteUserByEmail(email);
       }
@@ -89,7 +89,7 @@ function visitAndCheck(url: string, waitTime = 1000) {
   cy.location("pathname").should("contain", url).wait(waitTime);
 }
 
-export let registerCommands = () => {
+export const registerCommands = () => {
   Cypress.Commands.add("login", login);
   Cypress.Commands.add("cleanupUser", cleanupUser);
   Cypress.Commands.add("visitAndCheck", visitAndCheck);
