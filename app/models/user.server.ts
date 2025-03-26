@@ -14,7 +14,7 @@ export async function getUserByEmail(email: User["email"]) {
 }
 
 export async function createUser(email: User["email"], password: string) {
-  let hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   return prisma.user.create({
     data: {
@@ -36,7 +36,7 @@ export async function verifyLogin(
   email: User["email"],
   password: Password["hash"],
 ) {
-  let userWithPassword = await prisma.user.findUnique({
+  const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
       password: true,
@@ -47,7 +47,7 @@ export async function verifyLogin(
     return null;
   }
 
-  let isValid = await bcrypt.compare(
+  const isValid = await bcrypt.compare(
     password,
     userWithPassword.password.hash,
   );
@@ -57,7 +57,7 @@ export async function verifyLogin(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let { password: _password, ...userWithoutPassword } = userWithPassword;
+  const { password: _password, ...userWithoutPassword } = userWithPassword;
 
   return userWithoutPassword;
 }
